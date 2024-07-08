@@ -10,8 +10,23 @@ class Produto extends Model
     use HasFactory;
 
     protected $fillable = [
-        'descricao', 'valor_venda', 'estoque',
+        'descricao',
+        'valor_venda',
+        'estoque',
+        'imagens',
     ];
+
+    protected $casts = [
+        'imagens' => 'array',
+    ];
+
+    public function getImagensUrlsAttribute()
+    {
+        return array_map(function ($path) {
+            return Storage::url($path);
+        }, $this->imagens ?? []);
+    }
+    
     public function pedidos()
     {
         return $this->belongsToMany(Pedido::class);

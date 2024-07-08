@@ -14,17 +14,31 @@ class ProdutoController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'descricao' => 'required|string',
-            'valor_venda' => 'required|numeric',
-            'estoque' => 'required|integer',
-        ]);
+{
+    $data = $request->validate([
+        'descricao' => 'required|string',
+        'valor_venda' => 'required|numeric',
+        'estoque' => 'required|integer',
+        'imagens.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        $produto = Produto::create($data);
+    $produto = Produto::create([
+        'descricao' => $data['descricao'],
+        'valor_venda' => $data['valor_venda'],
+        'estoque' => $data['estoque'],
+    ]);
 
-        return response()->json($produto, 201);
+    if ($request->hasFile('imagens')) {
+        $imagens = [];
+        foreach ($request->file('imagens') as $imagem) {
+            $nomeImagem = $imagem->store('imagens_produtos', 'public');
+            $imagens[] = $nomeImagem;
+        }
+        $produto->update(['imagens' => $imagens]);
     }
+
+    return response()->json($produto, 201);
+}
 
     public function show($id)
     {
@@ -40,9 +54,23 @@ class ProdutoController extends Controller
             'descricao' => 'required|string',
             'valor_venda' => 'required|numeric',
             'estoque' => 'required|integer',
+            'imagens.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $produto->update($data);
+        $produto->update([
+            'descricao' => $data['descricao'],
+            'valor_venda' => $data['valor_venda'],
+            'estoque' => $data['estoque'],
+        ]);
+
+        if ($request->hasFile('imagens')) {
+            $imagens = [];
+            foreach ($request->file('imagens') as $imagem) {
+                $nomeImagem = $imagem->store('imagens_produtos', 'public');
+                $imagens[] = $nomeImagem;
+            }
+            $produto->update(['imagens' => $imagens]);
+        }
 
         return response()->json($produto, 200);
     }
